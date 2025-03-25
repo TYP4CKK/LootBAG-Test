@@ -1,25 +1,34 @@
 using UnityEngine;
+using System.Collections;
 
-public class target : MonoBehaviour, IDamageable
+public class Target : MonoBehaviour, IDamageable
 {
     public float health = 100f;
+    public Color damageColor = Color.red;
+    public float colorChangeDuration = 0.5f;
 
-    public bool IsDead => health <= 0;
+    private Renderer targetRenderer;
+    private Color originalColor;
 
-    public void TakeDamage(float amount)
+    private void Start()
     {
-        health -= amount;
-        Debug.Log($"{gameObject.name} has taken {amount} damage. Remaining Health: {health}");
-
-        if (IsDead)
-        {
-            Die();
-        }
+        targetRenderer = GetComponent<Renderer>();
+        originalColor = targetRenderer.material.color;
     }
-
-    private void Die()
+    public void TakeDamage(float damage)
     {
-        Debug.Log($"{gameObject.name} has died!");
-        Destroy(gameObject);
+        health -= damage;
+
+        if (health <= 0f)
+        {
+            Destroy(gameObject);
+        }
+        StartCoroutine(ChangeColorOnDamage());
+    }
+    private IEnumerator ChangeColorOnDamage()
+    {
+        targetRenderer.material.color = damageColor;
+        yield return new WaitForSeconds(colorChangeDuration);
+        targetRenderer.material.color = originalColor;
     }
 }
